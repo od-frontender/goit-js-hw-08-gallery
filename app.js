@@ -63,3 +63,73 @@ const galleryItems = [
     description: 'Lighthouse Coast Sea',
   },
 ];
+
+const refs = {
+  galeryContainer: document.querySelector('.js-gallery'),
+  modal: document.querySelector('.js-lightbox'),
+  modalCloseBtn: document.querySelector('[data-action="close-lightbox"]'),
+  overlay: document.querySelector('.lightbox__overlay'),
+  modalImage: document.querySelector('.lightbox__image'),
+};
+
+function createSliderMarkup(cards) {
+  return cards
+    .map(({ preview, original, description }) => {
+      return `
+      <li class="gallery__item">
+      <a
+        class="gallery__link"
+        href="${original}"
+      >
+        <img
+          class="gallery__image"
+          src="${preview}"
+          data-source="${original}"
+          alt="${description}"
+        />
+      </a>
+    </li>
+      `;
+    })
+    .join('');
+}
+const cardsMarkup = createSliderMarkup(galleryItems);
+refs.galeryContainer.insertAdjacentHTML('beforeend', cardsMarkup);
+
+refs.galeryContainer.addEventListener('click', onContainerClick);
+
+function onContainerClick(e) {
+  e.preventDefault();
+  const target = e.target;
+
+  if (target.nodeName !== 'IMG') {
+    return;
+  }
+
+  refs.modal.classList.toggle('is-open');
+  window.addEventListener('keydown', closeModalToEsc);
+  refs.overlay.addEventListener('click', closeModal);
+
+  galleryItems.forEach(({ preview, original, description }) => {
+    if (target.src === preview) {
+      refs.modalImage.src = `${original}`;
+      refs.modalImage.alt = `${description}`;
+    }
+  });
+}
+
+refs.modalCloseBtn.addEventListener('click', closeModal);
+
+function closeModal(e) {
+  refs.modal.classList.toggle('is-open');
+  refs.modalImage.src = '';
+  refs.modalImage.alt = '';
+  window.removeEventListener('keydown', closeModalToEsc);
+  refs.overlay.removeEventListener('click', closeModal);
+}
+
+function closeModalToEsc(e) {
+  if (e.key === 'Escape') {
+    closeModal();
+  }
+}
